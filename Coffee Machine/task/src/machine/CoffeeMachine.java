@@ -11,5 +11,6 @@ public class CoffeeMachine {
                 ""+ b * 200+" ml of water\n" +
                 ""+ b * 50+" ml of milk\n" +
                 ""+ b * 15+" g of coffee beans");
+
     }
 }
