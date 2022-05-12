@@ -23,16 +23,12 @@ public class CoffeeMachine {
 //        int cups = scanner.nextInt();
 
         Machine machine = new Machine(400, 540, 120, 9, 550);
-        machine.print();
-
-        machine.sayMessageFromState();
+        machine.sayMessageFromState(false);
 
         while (machine.getState() != CoffeeMachineState.WAITING_END) {
             machine.processCommand(scanner.next());
             //scanner.nextLine();
+
         }
-
-        machine.print();
-
     }
 }

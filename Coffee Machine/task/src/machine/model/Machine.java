@@ -51,91 +51,81 @@ public class Machine {
         state = CoffeeMachineState.WAITING_ACTION;
     }
     public void print(){
-        System.out.println("The coffee machine has:\n" +
+        System.out.print("\nThe coffee machine has:\n" +
                 getWater() +" ml of water\n" +
                 getMilk() + " ml of milk\n" +
                 getBeans() + " g of coffee beans\n" +
                 getCups() + " disposable cups\n$" +
-                getMoney() +" of money");
-    }
-    public void prepareCoffee(int n) {
-        int cnt = 0;
-
-        int w = getWater();
-        int m = getMilk();
-        int b = getBeans();
-
-        do {
-            w -= 1;
-            b -= 1;
-            m -= 1;
-            if (w >= 0 && m >= 0 && b >= 0) {
-                cnt++;
-            }
-        } while (w > 0 && m > 0 && b > 0);
-        if (n == cnt) {
-            System.out.println("Yes, I can make that amount of coffee");
-        } else if (n > cnt) {
-            System.out.println("No, I can make only " + cnt + " cup(s) of coffee");
-        } else {
-            System.out.println("Yes, I can make that amount of coffee (and even " + (cnt - n) + " more than that)");
-        }
-
-
+                getMoney() +" of money\n");
     }
 
     public void processCommand(String command) {
         switch (command) {
             case "buy":
                 state = CoffeeMachineState.WAITING_CHOOSE;
-                sayMessageFromState();
+                sayMessageFromState(true);
                 break;
 
             case "fill":
                 state = CoffeeMachineState.WAITING_WATER;
-                sayMessageFromState();
+                sayMessageFromState(true);
                 break;
 
             case "take":
-                state = CoffeeMachineState.WAITING_END;
+                state = CoffeeMachineState.WAITING_ACTION;
                 commandTakeMoney();
+                sayMessageFromState(true);
+                break;
+
+            case "exit":
+                state = CoffeeMachineState.WAITING_END;
+                break;
+
+            case "remaining":
+                print();
+                sayMessageFromState(true);
                 break;
 
             default:
-                processSubAction(Integer.parseInt(command));
+                processSubCommand(command);
         }
     }
 
-    private void processSubAction(int data){
+    private void processSubCommand(String command){
+
         switch (state) {
             case WAITING_CHOOSE:
-                if (data == 1) {
-                    commandBuyCoffee(Receipt.ESPRESSO);
-                } else if (data == 2) {
-                    commandBuyCoffee(Receipt.LATTE);
-                } else if (data == 3) {
-                    commandBuyCoffee(Receipt.CAPPUCCINO);
+                if ("1".equals(command) || "2".equals(command) || "3".equals(command)) {
+                    if (Integer.parseInt(command) == 1) {
+                        System.out.println(commandBuyCoffee(Receipt.ESPRESSO));
+                    } else if (Integer.parseInt(command) == 2) {
+                        System.out.println(commandBuyCoffee(Receipt.LATTE));
+                    } else if (Integer.parseInt(command) == 3) {
+                        System.out.println(commandBuyCoffee(Receipt.CAPPUCCINO));
+                    }
                 }
-                state = CoffeeMachineState.WAITING_END;
+                state = CoffeeMachineState.WAITING_ACTION;
+                sayMessageFromState(true);
                 break;
             case WAITING_WATER:
-                setWater(getWater() + data);
+                setWater(getWater() + Integer.parseInt(command));
                 state = CoffeeMachineState.WAITING_MILK;
-                sayMessageFromState();
+                sayMessageFromState(false);
                 break;
             case WAITING_MILK:
-                setMilk(getMilk() + data);
+                setMilk(getMilk() + Integer.parseInt(command));
                 state = CoffeeMachineState.WAITING_BEAN;
-                sayMessageFromState();
+                sayMessageFromState(false);
                 break;
             case WAITING_BEAN:
-                setBeans(getBeans() + data);
+                setBeans(getBeans() + Integer.parseInt(command));
                 state = CoffeeMachineState.WAITING_CUPS;
-                sayMessageFromState();
+                sayMessageFromState(false);
                 break;
             case WAITING_CUPS:
-                setCups(getCups() + data);
-                state = CoffeeMachineState.WAITING_END;
+                setCups(getCups() + Integer.parseInt(command));
+                state = CoffeeMachineState.WAITING_ACTION;
+                sayMessageFromState(true);
                 break;
             default:
                 state = CoffeeMachineState.WAITING_END;
@@ -146,20 +136,30 @@ public class Machine {
     }
 
     private void commandTakeMoney() {
-        System.out.println("I gave you $" + getMoney());
+        System.out.println("\nI gave you $" + getMoney());
         setMoney(0);
     }
 
-    private void commandBuyCoffee(Receipt receipt){
-        water -= receipt.getWater();
-        milk -= receipt.getMilk();
-        beans -= receipt.getBeans();
-        cups -= receipt.getCups();
+    private String commandBuyCoffee(Receipt receipt){
 
-        money += receipt.getCosts();
+        if (water - receipt.getWater() >= 0 )
+        {
+            water -= receipt.getWater();
+            milk -= receipt.getMilk();
+            beans -= receipt.getBeans();
+            cups -= receipt.getCups();
+
+            money += receipt.getCosts();
+            return  "I have enough resources, making you a coffee!";
+        }
+
+        return "Sorry, not enough water!";
     }
 
-    public void sayMessageFromState(){
+    public void sayMessageFromState(boolean withEmptyLine){
+        if (withEmptyLine) {
+            System.out.println();
+        }
         System.out.println(state.getMessage());
     }
 
